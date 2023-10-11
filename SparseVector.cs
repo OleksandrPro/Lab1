@@ -31,26 +31,36 @@ namespace Lab1
             int counter = 0;
             foreach (double item in coordinates)
             {
-                Add(new CoordinateItem(item, counter++));
+                if (item!=0)
+                {
+                    AddItem(new CoordinateItem(item, counter));
+                }
+                counter++;
             }
             Dimension = counter;
         }
         public SparseVector(ISparseVector other)
         {           
             this.Dimension = other.Dimension;
-            SparseVector castedOther = (SparseVector)other;
+            SparseVector castedOther = other as SparseVector;
 
-            Node current = castedOther._first;
- //           Node previous = null;
-
-            while(current!=null)
+            if (castedOther == null) 
             {
-                ICoordinateItem item = new CoordinateItem(current._coordinate);
-                Add(item);
-                current = current.Next;
-            }                      
+                throw new InvalidCastException(nameof(other)+" is wrong type");
+            }
+            else
+            {
+                Node current = castedOther._first;
+
+                while (current != null)
+                {
+                    ICoordinateItem item = new CoordinateItem(current._coordinate);
+                    AddItem(item);
+                    current = current.Next;
+                }
+            }                                  
         }
-        public void Add(ICoordinateItem item)
+        private void AddItem(ICoordinateItem item)
         {
             Node newNode = new Node(item);
             if (_first == null)
@@ -67,15 +77,27 @@ namespace Lab1
                 current.Next = newNode;
             }
         }
-        public double GetValueByIndex(int index)
+        private double GetValueByIndex(int index)
         {
             Node current = _first;
-            
-            while (current._coordinate.Index != index)
+            double result = 0;
+            try
             {
-                current = current.Next;
+                while (current._coordinate.Index != index)
+                {
+                    current = current.Next;
+                }
             }
-            return current._coordinate.Value;
+            catch (NullReferenceException)
+            {
+                return result;
+            }            
+            
+            if(current._coordinate != null)
+            {
+                result = current._coordinate.Value;
+            }
+            return result;
         }
         public void PrintElement()
         {
@@ -86,37 +108,134 @@ namespace Lab1
                 current = current.Next;
             }
         }
-
-        public override string ToString()
-        {
-            string result = "";
-
-            return base.ToString();
-        }
-
         public ISparseVector Add(ISparseVector otherVector)
         {
-            throw new NotImplementedException();
+            SparseVector castedOther = otherVector as SparseVector;
+            if (castedOther == null)
+            {
+                throw new InvalidCastException(nameof(otherVector) + " is wrong type");
+            }
+            if (Dimension!=otherVector.Dimension)
+            {
+                throw new ArgumentException("Vectors have different dimensions");
+            }
+            else
+            {
+                SparseVector result = new SparseVector();
+                result.Dimension = Dimension;
+                Node current = castedOther._first;
+                for (int i = 0; i<Dimension; i++)
+                {
+                    double value = GetValueByIndex(i) + castedOther.GetValueByIndex(i);
+                    if (value != 0)
+                    {
+                        result.AddItem(new CoordinateItem(value, i));
+                    }                    
+                }
+                return result;
+            }            
         }
 
         public ISparseVector Subtract(ISparseVector otherVector)
         {
-            throw new NotImplementedException();
+            SparseVector castedOther = otherVector as SparseVector;
+            if (castedOther == null)
+            {
+                throw new InvalidCastException(nameof(otherVector) + " is wrong type");
+            }
+            if (Dimension != otherVector.Dimension)
+            {
+                throw new ArgumentException("Vectors have different dimensions");
+            }
+            else
+            {
+                SparseVector result = new SparseVector();
+                result.Dimension = Dimension;
+                Node current = castedOther._first;
+                for (int i = 0; i < Dimension; i++)
+                {
+                    double value = GetValueByIndex(i) - castedOther.GetValueByIndex(i);
+                    if (value != 0)
+                    {
+                        result.AddItem(new CoordinateItem(value, i));
+                    }
+                }
+                return result;
+            }
         }
 
-        public ISparseVector Multiply(ISparseVector otherVector)
+        public ISparseVector Multiply(double number)
         {
-            throw new NotImplementedException();
+            SparseVector result = new SparseVector();            
+            for (int i = 0; i < Dimension; i++)
+            {
+                double value = GetValueByIndex(i) * number;
+                if (value != 0)
+                {
+                    result.AddItem(new CoordinateItem(value, i));
+                }
+            }
+            return result;
         }
 
-        public int CalculateMagnitude()
+        public double CalculateMagnitude()
         {
-            throw new NotImplementedException();
+            double result = 0;
+            Node current = _first;
+            while (current != null) 
+            {
+                double value = current._coordinate.Value;
+                result += value*value;
+                current = current.Next;
+            }
+            return Math.Sqrt(result);
         }
 
-        public int CalculateDotProduct()
+        public double CalculateDotProduct(ISparseVector otherVector)
         {
-            throw new NotImplementedException();
+            SparseVector castedOther = otherVector as SparseVector;
+            if (castedOther == null)
+            {
+                throw new InvalidCastException(nameof(otherVector) + " is wrong type");
+            }
+            if (Dimension != otherVector.Dimension)
+            {
+                throw new ArgumentException("Vectors have different dimensions");
+            }
+            else
+            {
+                double result = 0;
+                for (int i = 0; i < Dimension; i++)
+                {
+                    double value = GetValueByIndex(i) * castedOther.GetValueByIndex(i);
+                    result += value;
+                }
+                return result;
+            }                   
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is SparseVector vector &&
+                   EqualityComparer<Node>.Default.Equals(_first, vector._first) &&
+                   Dimension == vector.Dimension;
+        }
+
+        public override int GetHashCode()
+        {
+            int hashCode = -1121357873;
+            hashCode = hashCode * -1521134295 + EqualityComparer<Node>.Default.GetHashCode(_first);
+            hashCode = hashCode * -1521134295 + Dimension.GetHashCode();
+            return hashCode;
+        }
+        public override string ToString()
+        {
+            string result = "";
+            for(int i = 0; i < Dimension; i++)
+            {
+                result += GetValueByIndex(i).ToString() + " ";                
+            }
+            return result;
         }
     }
 }

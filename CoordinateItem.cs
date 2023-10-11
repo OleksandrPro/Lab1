@@ -17,7 +17,7 @@ namespace Lab1
         public CoordinateItem(double value, int index)
         {
             Value = value;
-            Index = index;
+            Index = index;            
         }
         public CoordinateItem(ICoordinateItem other)
         {
