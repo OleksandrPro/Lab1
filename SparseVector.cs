@@ -8,84 +8,87 @@ namespace Lab1
 {
     public class SparseVector : ISparseVector
     {
-        private class CoordinateItem : ICoordinateItem
+        private class Node
         {
-            public double Value { get; set; }
-            public int Index { get; set; }
-            public ICoordinateItem NextItem { get; set; }
-            public CoordinateItem()
+            public ICoordinateItem _coordinate;
+            public Node Next { get; set; }
+            public Node(ICoordinateItem item)
             {
-
-            }
-            public CoordinateItem(double value, int index)
-            {
-                Value = value;
-                Index = index;
-            }
-            public override string ToString()
-            {
-                return "value: " + Value.ToString() + " index: " + Index.ToString();
+                _coordinate = item;
+                Next = null;
             }
         }
-        private class Coordinates
-        {
-
-            public ICoordinateItem _first;
-            public Coordinates()
-            {
-                _first = null;
-            }
-            public void Add(ICoordinateItem item)
-            {
-                ICoordinateItem temp = _first;
-                _first = item;
-                item.NextItem = temp;
-            }
-            public ICoordinateItem GetFirst()
-            {
-                return _first;
-            }
-            public void SetFirst(ICoordinateItem item)
-            {
-                _first = item;
-            }
-        }
-        private Coordinates _coordinates;
-
+        private Node _first;
         public int Dimension { get; set; }
 
         public SparseVector()
         {
-            _coordinates = new Coordinates();
+            _first = null;
             Dimension = 0;
         }
         public SparseVector(double[] coordinates)
         {
-            _coordinates = new Coordinates();
-            for (int i = 0; i < coordinates.Length; i++)
+            int counter = 0;
+            foreach (double item in coordinates)
             {
-                if (coordinates[i] != 0)
-                    _coordinates.Add(new CoordinateItem(coordinates[i], i));
+                Add(new CoordinateItem(item, counter++));
             }
-            Dimension = coordinates.Length;
+            Dimension = counter;
+        }
+        public SparseVector(ISparseVector other)
+        {           
+            this.Dimension = other.Dimension;
+            SparseVector castedOther = (SparseVector)other;
+
+            Node current = castedOther._first;
+            Node previous = null;
+
+            while(current!=null)
+            {
+                ICoordinateItem item = new CoordinateItem(current._coordinate);
+                Node newNode = new Node(item);
+                if (previous==null)
+                     _first = newNode;
+                else 
+                    previous.Next = newNode;
+                previous = current;
+                current = current.Next;
+            }                      
+        }
+        public void Add(ICoordinateItem item)
+        {
+            Node newNode = new Node(item);
+            if (_first == null)
+            {
+                _first = newNode;
+            }                
+            else
+            {
+                Node current = _first;
+                while (current.Next != null)
+                {
+                    current = current.Next;
+                }
+                current.Next = newNode;
+            }
         }
         public double GetValueByIndex(int index)
         {
-            ICoordinateItem current = _coordinates.GetFirst();
-            while (current.Index != index)
+            Node current = _first;
+            
+            while (current._coordinate.Index != index)
             {
-                current = current.NextItem;
+                current = current.Next;
             }
-            return current.Value;
+            return current._coordinate.Value;
         }
         public void PrintElement()
         {
-            while (_coordinates.GetFirst() != null)
+            Node current = _first;
+            while (current != null)
             {
-                Console.WriteLine(_coordinates.GetFirst());
-                CoordinateItem temp = new CoordinateItem();
-                temp.NextItem = _coordinates.GetFirst().NextItem;
-                _coordinates.SetFirst(temp.NextItem);
+                Console.WriteLine(current._coordinate);
+                current = current.Next;
             }
         }
 

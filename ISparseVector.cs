@@ -9,7 +9,7 @@ namespace Lab1
     public interface ISparseVector
     {
         int Dimension { get; set; }
-        //       CoordinateItem CoordinateItem { get; set; }
+//        ICoordinateItem First { get; set; }
         ISparseVector Add(ISparseVector otherVector);
         ISparseVector Subtract(ISparseVector otherVector);
         ISparseVector Multiply(ISparseVector otherVector);

@@ -10,6 +10,5 @@ namespace Lab1
     {
         int Index { get; set; }
         double Value { get; set; }
-        ICoordinateItem NextItem { get; set; }
     }
 }
