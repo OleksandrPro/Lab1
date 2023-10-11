@@ -7,3 +7,5 @@ Properties/
 .vs/
 /obj
 /bin
+/packages
+/TestResults
