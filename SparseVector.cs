@@ -28,6 +28,11 @@ namespace Lab1
         }
         public SparseVector(double[] coordinates)
         {
+            if (coordinates == null)
+            {
+                _first = null;
+                Dimension = 0;
+            }
             int counter = 0;
             foreach (double item in coordinates)
             {
@@ -135,7 +140,6 @@ namespace Lab1
                 return result;
             }            
         }
-
         public ISparseVector Subtract(ISparseVector otherVector)
         {
             SparseVector castedOther = otherVector as SparseVector;
@@ -166,7 +170,8 @@ namespace Lab1
 
         public ISparseVector Multiply(double number)
         {
-            SparseVector result = new SparseVector();            
+            SparseVector result = new SparseVector(); 
+            result.Dimension = Dimension;
             for (int i = 0; i < Dimension; i++)
             {
                 double value = GetValueByIndex(i) * number;
@@ -216,9 +221,34 @@ namespace Lab1
 
         public override bool Equals(object obj)
         {
-            return obj is SparseVector vector &&
-                   EqualityComparer<Node>.Default.Equals(_first, vector._first) &&
-                   Dimension == vector.Dimension;
+            bool result = false;
+            Node currentThis = _first;
+            SparseVector castedOther = obj as SparseVector;
+            if (castedOther == null)
+            {
+                return result;
+            }
+            Node currentOther = castedOther._first;
+            if (currentThis == null && currentOther==null)
+            {
+                result = true;
+                return result;
+            }
+            if (Dimension != castedOther.Dimension)
+            {
+                return false;
+            }
+            while (currentThis!=null && currentOther!=null)
+            {
+                if(currentThis._coordinate.Value != currentOther._coordinate.Value || currentThis._coordinate.Index != currentOther._coordinate.Index)
+                {
+                    return result;
+                }
+                currentThis = currentThis.Next;
+                currentOther = currentOther.Next;
+            }
+            result = true;
+            return result;
         }
 
         public override int GetHashCode()
