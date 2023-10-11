@@ -41,17 +41,12 @@ namespace Lab1
             SparseVector castedOther = (SparseVector)other;
 
             Node current = castedOther._first;
-            Node previous = null;
+ //           Node previous = null;
 
             while(current!=null)
             {
                 ICoordinateItem item = new CoordinateItem(current._coordinate);
-                Node newNode = new Node(item);
-                if (previous==null)
-                     _first = newNode;
-                else 
-                    previous.Next = newNode;
-                previous = current;
+                Add(item);
                 current = current.Next;
             }                      
         }
