@@ -14,7 +14,6 @@ namespace Lab1
         ISparseVector Multiply(double number);
         double CalculateMagnitude();
         double CalculateDotProduct(ISparseVector otherVector);
-        void PrintElement();
     }
 }
 

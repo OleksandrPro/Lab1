@@ -30,11 +30,6 @@ namespace Lab1
             throw new NotImplementedException();
         }
 
-        public void PrintElement()
-        {
-            throw new NotImplementedException();
-        }
-
         public ISparseVector Subtract(ISparseVector otherVector)
         {
             throw new NotImplementedException();
