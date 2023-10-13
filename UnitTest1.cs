@@ -1,7 +1,6 @@
 ﻿using Lab1;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Security.Cryptography.X509Certificates;
 
 namespace Lab1Tests
 {
@@ -247,6 +246,29 @@ namespace Lab1Tests
             result = s1.ToString();
             //Assert
             Assert.AreEqual(expected, result);
-        }       
+        }
+        [TestMethod()]
+        public void ToString_ConvertionIntoStringWith1NullElement_ReturnCorrectString()
+        {
+            // Arrange
+            ISparseVector s1 = new SparseVector(new double[] { 0 });
+            
+            string expected = "0 ";
+            //Act
+            
+            //Assert
+            Assert.AreEqual(expected, s1.ToString());
+        }
+        [TestMethod()]
+        public void ConstructorTest_CheckFor1NullElement_ReturnsVectorWith1Dimension()
+        {
+            // Arrange
+            ISparseVector s1 = new SparseVector(new double[] {0});
+            
+            ISparseVector expected = new SparseVector();
+            expected.Dimension = 1;
+            Assert.AreEqual(expected, s1);
+            Assert.AreEqual(expected.Dimension, s1.Dimension);
+        }
     }
 }

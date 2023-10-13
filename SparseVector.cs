@@ -5,11 +5,26 @@ namespace Lab1
 {
     public class SparseVector : ISparseVector
     {
+        private class CoordinateItem
+        {
+            public double Value { get; set; }
+            public int Index { get; set; }
+            public CoordinateItem(double value, int index)
+            {
+                Value = value;
+                Index = index;
+            }
+            public CoordinateItem(CoordinateItem other)
+            {
+                Value = other.Value;
+                Index = other.Index;
+            }
+        }
         private class Node
         {
-            public ICoordinateItem _coordinate;
+            public CoordinateItem _coordinate;
             public Node Next { get; set; }
-            public Node(ICoordinateItem item)
+            public Node(CoordinateItem item)
             {
                 _coordinate = item;
                 Next = null;
@@ -21,6 +36,11 @@ namespace Lab1
         {
             _first = null;
             Dimension = 0;
+        }
+        public SparseVector(int dimension)
+        {
+            _first = null;
+            Dimension = dimension;
         }
         public SparseVector(double[] coordinates)
         {
@@ -42,18 +62,18 @@ namespace Lab1
         }
         public SparseVector(ISparseVector other)
         {           
-            this.Dimension = other.Dimension;
+            Dimension = other.Dimension;
             SparseVector castedOther = other as SparseVector;
             CastExceptionCheck(castedOther);
             Node current = castedOther._first;
             while (current != null)
             {
-                ICoordinateItem item = new CoordinateItem(current._coordinate);
+                CoordinateItem item = new CoordinateItem(current._coordinate);
                 AddItem(item);
                 current = current.Next;
             }
         }
-        private void AddItem(ICoordinateItem item)
+        private void AddItem(CoordinateItem item)
         {
             Node newNode = new Node(item);
             if (_first == null)
@@ -105,31 +125,16 @@ namespace Lab1
                 throw new ArgumentException("Vectors have different dimensions");
             }
         }
-        private enum OperationType
-        {
-            Add, Subtract
-        }
-        private ISparseVector UtilAdditionSubtractionFunction(ISparseVector vector, OperationType type)
+        private delegate double PerformOperation(double a, double b);
+        private ISparseVector UtilAdditionSubtractionFunction(ISparseVector vector, PerformOperation operation)
         {
             SparseVector castedOther = vector as SparseVector;
             CastExceptionCheck(castedOther);
             EqualDimansionCheck(vector);
-            SparseVector result = new SparseVector();
-            result.Dimension = Dimension;
-            Node current = castedOther._first;
+            SparseVector result = new SparseVector(Dimension);
             for (int i = 0; i < Dimension; i++)
             {
-                double value = 0;
-                int expressionCoefficient = 1;
-                if (type==OperationType.Add)
-                {
-                    expressionCoefficient = 1;
-                }
-                else if (type == OperationType.Subtract)
-                {
-                    expressionCoefficient = -1;
-                }
-                value = GetValueByIndex(i) + expressionCoefficient * castedOther.GetValueByIndex(i);
+                double value = operation(GetValueByIndex(i), castedOther.GetValueByIndex(i));
                 if (value != 0)
                 {
                     result.AddItem(new CoordinateItem(value, i));
@@ -140,19 +145,20 @@ namespace Lab1
         public ISparseVector Add(ISparseVector otherVector)
         {
             ISparseVector result = new SparseVector();
-            result = UtilAdditionSubtractionFunction(otherVector, OperationType.Add);
+            PerformOperation operation = new PerformOperation((a, b) => a + b);
+            result = UtilAdditionSubtractionFunction(otherVector, operation);
             return result;
         }
         public ISparseVector Subtract(ISparseVector otherVector)
         {
             ISparseVector result = new SparseVector();
-            result = UtilAdditionSubtractionFunction(otherVector, OperationType.Subtract);
+            PerformOperation operation = new PerformOperation((a, b) => a - b);
+            result = UtilAdditionSubtractionFunction(otherVector, operation);
             return result;
         }
         public ISparseVector Multiply(double number)
         {
-            SparseVector result = new SparseVector(); 
-            result.Dimension = Dimension;
+            SparseVector result = new SparseVector(Dimension); 
             for (int i = 0; i < Dimension; i++)
             {
                 double value = GetValueByIndex(i) * number;
@@ -219,7 +225,6 @@ namespace Lab1
             result = true;
             return result;
         }
-
         public override int GetHashCode()
         {
             int hashCode = -1121357873;
